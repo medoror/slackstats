@@ -1,0 +1,22 @@
+version: '3'
+services:
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+  web:
+    build: .
+    command: node index.js
+    volumes:
+      - .:/usr/app/
+      - /usr/app/node_modules
+    ports:
+      - "${NODE_APP_PORT}:${NODE_APP_PORT}"
+    depends_on:
+      - db
