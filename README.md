@@ -53,17 +53,17 @@ select u_real_name, u_text FROM user_info INNER JOIN conversation_history ON use
 
 Users with the most replies
 ```postgresql
-select user_info.u_real_name, sum(u_replies) as Num_Replies from user_info INNER JOIN conversation_history ON user_info.u_id = conversation_history.u_id group by user_info.u_real_name ORDER BY num_reactions DESC
+select user_info.u_real_name, sum(u_replies) as Num_Replies from user_info INNER JOIN conversation_history ON user_info.u_id = conversation_history.u_id group by user_info.u_real_name ORDER BY num_replies DESC;
 ```
 
 Users with the most reactions
 ```postgresql
-select user_info.u_real_name, sum(u_reaction_count) as Num_Reactions from user_info INNER JOIN conversation_history ON user_info.u_id = conversation_history.u_id group by user_info.u_real_name ORDER BY num_reactions DESC
+select user_info.u_real_name, sum(u_reaction_count) as Num_Reactions from user_info INNER JOIN conversation_history ON user_info.u_id = conversation_history.u_id group by user_info.u_real_name ORDER BY num_reactions DESC;
 ```
 
 Comments with the most replies
 ```postgresql
-select u_text, u_replies from conversation_history;
+select u_text, u_replies from conversation_history order by u_replies DESC;
 ```
 
 # Database Schema

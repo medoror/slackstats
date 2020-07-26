@@ -17,15 +17,49 @@ const app = new App({
     signingSecret: process.env.SLACK_SIGNING_SECRET
 });
 
-async function getAllHistory(channel_id) {
-    // get data from slack
-    try {
-        const result = await app.client.conversations.history({
-            token: process.env.SLACK_BOT_TOKEN,
-            channel: channel_id,
-        });
+async function getConversationHistory(channel_id) {
+    let messagesPerPage = 200;
+    let maxMessages = 400;
+    let allMessages = [];
+    let hasMoreRecords = true;
+    let cursor;
 
-        return result.messages;
+    async function msleep(n) {
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, n);
+    }
+    async function sleep(n) {
+        msleep(n*1000);
+    }
+
+    while ((allMessages.length + messagesPerPage <= maxMessages) && hasMoreRecords) {
+        let options = {token: process.env.SLACK_BOT_TOKEN, channel: channel_id, limit: messagesPerPage};
+        if(cursor){
+            let cursorObj = {cursor:cursor};
+            options = {...options, ...cursorObj}
+        }
+
+        let {messagesArray, nextCursor, hasMore} = await queryConversationsPage(options);
+        hasMoreRecords = !!hasMore;
+        cursor = nextCursor;
+
+        allMessages.push(...messagesArray);
+
+        // console.log("messages: " + messagesArray);
+        console.log("next cursor: " + cursor);
+        console.log("has more: " + hasMore);
+        console.log("all message length: " + allMessages.length);
+        console.log("messages per page: " + messagesPerPage);
+
+        await sleep(10);
+
+    }
+    return allMessages;
+}
+
+async function queryConversationsPage(options) {
+    try {
+        const result = await app.client.conversations.history(options);
+        return { messagesArray: result.messages, nextCursor: result.response_metadata.next_cursor, hasMore: result.has_more };
     } catch (error) {
         console.error(error);
     }
@@ -65,7 +99,7 @@ async function getReactionCount(timestamp) {
             // The token you used to initialize your app
             token: process.env.SLACK_BOT_TOKEN,
             channel: process.env.SLACK_CHANNEL_ID,
-            ts: timestamp
+            timestamp: timestamp
         });
         return result.message.reactions ? result.message.reactions.length : NO_REACTION_COUNT
     } catch (error) {
@@ -106,7 +140,7 @@ async function saveUsersToDatabase(userList){
 
     console.log('⚡️ Bolt app is running!');
 
-    let allMessageHistory = await getAllHistory(process.env.SLACK_CHANNEL_ID);
+    let allMessageHistory = await getConversationHistory(process.env.SLACK_CHANNEL_ID);
 
     await saveConversationsToDatabase(allMessageHistory);
 
