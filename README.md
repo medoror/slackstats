@@ -1,22 +1,8 @@
 Motivations:
 
-Joined a team that uses slack in a very custom way.  Every single build reports to a specific channel from via slackbot/jenkins
-integrations.  This same chanel is also used by devs as a the main place to collaborate
-
-Saying that this channel is noisy is an under statement
-
-I think most people on the team felt the same way.
-
-But management did not feel the same way.  There were historical reasons why this slack channel was the way it was.
-
-But I felt like if I quantified my feelings, them maybe I would have some inroads in discussing ways to mitigate the noise
-
-``Do we need this slackbot to output jenkins failuers to this channel? Do we really? How many times do we interact with
-this notification?``
+Create quantifiable stats of messages in slack channels
 
 USAGE:
-
-Configure the slack channel in the Dockerfile or docker compose
 
 1) Clone this repo
 
@@ -41,12 +27,12 @@ POSTGRES_HOST=<Enter the database hostname>
 
 Example SQL commands:
 
-All users (real name)
+All users (real names)
 ```postgresql
 select u_real_name from user_info;
 ```
 
-Users with messages
+All users and messages
 ```postgresql
 select u_real_name, u_text FROM user_info INNER JOIN conversation_history ON user_info.u_id = conversation_history.u_id;
 ```
@@ -67,6 +53,7 @@ select u_text, u_replies from conversation_history order by u_replies DESC;
 ```
 
 # Database Schema
+
 ## user_info table
 
 |                    id             |  u_id    |       u_real_name      | 
@@ -77,16 +64,9 @@ select u_text, u_replies from conversation_history order by u_replies DESC;
 ## conversation_history table
 
 |                    id             |  u_id   |           u_text                  | u_timestamp      | u_reaction_count | u_replies |
-|-----------------------------------|---------|-----------------------------------|-------------------------------------|-----------|
+|-----------------------------------|---------|-----------------------------------|------------------|------------------|-----------|
 | 1                                 | CXCZVS  | Here is a link to the study notes |1595548456.000200 | 1                |0          |
 | 2                                 | ADFASD  | MR #90 has been approved          |1595548451.000300 | 3                |0          |
 
-
-TODO: Fix conversation replies as they are not returning info for "bad timestamps"
-
-References
-
-- Steps to create a slack bot with bolt: https://slack.dev/bolt-js/tutorial/getting-started
-- pg node example: https://blog.logrocket.com/setting-up-a-restful-api-with-node-js-and-postgresql-d96d6fc892d8/
-- docker compose networking: https://docs.docker.com/compose/networking/
-- docker compose: https://rollout.io/blog/using-docker-compose-for-nodejs-development/
+# TODO
+Look into the rate limiting problems. Would prefer to not see auto retry errors in the logs
