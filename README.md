@@ -1,8 +1,23 @@
-Motivations:
+# Motivations
 
 Create quantifiable stats of messages in slack channels
 
-USAGE:
+# Prerequisites
+
+You will need to enable a slackbot into your slack workspace with the following permissions
+```text
+channels:history
+channels:read
+emoji:read
+groups:history
+im:history
+mpim:history
+reactions:read
+users:read
+```
+
+
+# Usage
 
 1) Clone this repo
 
@@ -19,9 +34,15 @@ POSTGRES_PORT=<Enter postgres port>
 POSTGRES_HOST=<Enter the database hostname>
 ```
 
-1) Run the database and execute the node app `docker-compose down --remove-orphans --volumes && docker-compose up -d`
+1) Run the database and execute the node app 
+```bash
+docker-compose down --remove-orphans --volumes && docker-compose up -d
+```
 
-1) Log into the postgres client `docker exec -it <POSTGRES_HOST> psql -U <POSTGRES_USER> <POSTGRES_PASSWORD>`
+1) Log into the postgres client 
+```bash
+docker exec -it <POSTGRES_HOST> psql -U <POSTGRES_USER> <POSTGRES_PASSWORD>
+```
 
 1) Run some sample queries to get slack stats
 

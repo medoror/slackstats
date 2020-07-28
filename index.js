@@ -3,6 +3,8 @@ require('dotenv').config();
 const { App } = require('@slack/bolt');
 const { Pool } = require("pg");
 
+const DEBUG = false;
+
 const pool = new Pool({
     user: process.env.POSTGRES_USER,
     host: process.env.POSTGRES_HOST, // TODO isn't there a better way to access the database host?
@@ -17,19 +19,20 @@ const app = new App({
     signingSecret: process.env.SLACK_SIGNING_SECRET
 });
 
+async function msleep(n) {
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, n);
+}
+async function sleep(seconds) {
+    msleep(seconds*1000);
+}
+
 async function getConversationHistory(channel_id) {
     let messagesPerPage = 200;
     let maxMessages = 400;
     let allMessages = [];
     let hasMoreRecords = true;
-    let cursor;
 
-    async function msleep(n) {
-        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, n);
-    }
-    async function sleep(n) {
-        msleep(n*1000);
-    }
+    let cursor;
 
     while ((allMessages.length + messagesPerPage <= maxMessages) && hasMoreRecords) {
         let options = {token: process.env.SLACK_BOT_TOKEN, channel: channel_id, limit: messagesPerPage};
@@ -44,13 +47,15 @@ async function getConversationHistory(channel_id) {
 
         allMessages.push(...messagesArray);
 
-        // console.log("messages: " + messagesArray);
-        console.log("next cursor: " + cursor);
-        console.log("has more: " + hasMore);
-        console.log("all message length: " + allMessages.length);
-        console.log("messages per page: " + messagesPerPage);
+        if (DEBUG) {
+            console.log("messages: " + messagesArray);
+            console.log("next cursor: " + cursor);
+            console.log("has more: " + hasMore);
+            console.log("all message length: " + allMessages.length);
+            console.log("messages per page: " + messagesPerPage);
+        }
 
-        await sleep(10);
+        await sleep(15);
 
     }
     return allMessages;
@@ -126,7 +131,6 @@ async function saveConversationsToDatabase(messageList){
 
 async function saveUsersToDatabase(userList){
     userList.forEach(function (user) {
-        // need to encode only urls
         pool.query(`INSERT INTO user_info(u_id, u_real_name) VALUES ($1, $2)`, [user.id,
                 user.real_name], (err, res) => {
                 console.log(err, res);
