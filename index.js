@@ -120,7 +120,6 @@ async function saveConversationsToDatabase(messageList){
         let channelReplyCount = await getChannelReplyCount(message.ts);
 
         //TODO need to encode only urls
-        console.log("Reaction count: "+reactionCount);
         pool.query(`INSERT INTO conversation_history(u_id, u_text, u_timestamp, u_reaction_count, u_replies) VALUES ($1, $2, $3, $4, $5)`,
             [message.user, encodeURIComponent(message.text), message.ts, Number(channelReplyCount), Number(reactionCount)], (err, res) => {
                 console.log(err, res);

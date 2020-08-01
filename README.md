@@ -1,6 +1,6 @@
 # Motivations
 
-Create quantifiable stats of messages in slack channels
+Query for quantifiable stats of messages in slack channels using postgres
 
 # Prerequisites
 
